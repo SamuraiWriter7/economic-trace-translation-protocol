@@ -1,0 +1,1057 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/SamuraiWriter7/economic-trace-translation-protocol/main/schemas/contribution-translation-profile.schema.json",
+  "title": "Contribution Translation Profile",
+  "description": "A machine-readable profile for translating accepted or reviewable cross-domain causal participation into evidence-backed contribution claims without determining allocation eligibility, royalty entitlement, or payment obligations.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "profile_id",
+    "created_at",
+    "source_binding",
+    "translation_profile",
+    "contribution_subjects",
+    "contribution_claims",
+    "bundle_summary",
+    "review",
+    "profile_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.4.0"
+    },
+    "record_type": {
+      "const": "contribution_translation_profile"
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_binding": {
+      "$ref": "#/$defs/source_binding"
+    },
+    "translation_profile": {
+      "$ref": "#/$defs/translation_profile"
+    },
+    "contribution_subjects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/contribution_subject"
+      },
+      "minItems": 1,
+      "maxItems": 500
+    },
+    "contribution_claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/contribution_claim"
+      },
+      "minItems": 1,
+      "maxItems": 1000
+    },
+    "bundle_summary": {
+      "$ref": "#/$defs/bundle_summary"
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unresolved_item"
+      },
+      "maxItems": 500
+    },
+    "review": {
+      "$ref": "#/$defs/review"
+    },
+    "profile_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "review_required",
+        "accepted",
+        "rejected",
+        "disputed",
+        "superseded"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "supersedes_ref": {
+      "$ref": "#/$defs/reference"
+    },
+    "superseded_by_ref": {
+      "$ref": "#/$defs/reference"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profile_status": {
+            "const": "accepted"
+          }
+        },
+        "required": [
+          "profile_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "review": {
+            "properties": {
+              "review_status": {
+                "enum": [
+                  "not_required",
+                  "approved"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile_status": {
+            "const": "superseded"
+          }
+        },
+        "required": [
+          "profile_status"
+        ]
+      },
+      "then": {
+        "required": [
+          "superseded_by_ref"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_id",
+        "ref_type"
+      ],
+      "properties": {
+        "ref_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "causal_binding_record",
+            "translation_record",
+            "classification_record",
+            "contribution_profile",
+            "event",
+            "actor",
+            "dataset",
+            "system",
+            "node",
+            "edge",
+            "path",
+            "outcome",
+            "policy",
+            "rule",
+            "evidence",
+            "measurement",
+            "audit",
+            "dispute",
+            "external_record",
+            "other"
+          ]
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1200
+        }
+      }
+    },
+    "reference_list": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reference"
+      },
+      "uniqueItems": true,
+      "maxItems": 200
+    },
+    "source_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding_id",
+        "schema_version",
+        "binding_status",
+        "record_ref",
+        "included_node_refs",
+        "included_edge_refs",
+        "included_path_refs"
+      ],
+      "properties": {
+        "binding_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "schema_version": {
+          "const": "0.3.0"
+        },
+        "binding_status": {
+          "type": "string",
+          "enum": [
+            "review_required",
+            "accepted",
+            "disputed"
+          ]
+        },
+        "record_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "included_node_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "maxItems": 1000
+        },
+        "included_edge_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "maxItems": 2000
+        },
+        "included_path_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "maxItems": 500
+        },
+        "outcome_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 500
+        }
+      }
+    },
+    "translator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "translator_ref",
+        "translator_type"
+      ],
+      "properties": {
+        "translator_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "translator_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "organization",
+            "ai_agent",
+            "automated_system",
+            "hybrid",
+            "other"
+          ]
+        },
+        "system_name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "system_version": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "translation_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_name",
+        "profile_version",
+        "translation_method",
+        "translator",
+        "confidence_scale",
+        "attribution_policy"
+      ],
+      "properties": {
+        "profile_name": {
+          "const": "ettp-contribution-translation"
+        },
+        "profile_version": {
+          "const": "0.4.0"
+        },
+        "translation_method": {
+          "type": "string",
+          "enum": [
+            "rule_based",
+            "model_assisted",
+            "human_assigned",
+            "hybrid"
+          ]
+        },
+        "translator": {
+          "$ref": "#/$defs/translator"
+        },
+        "confidence_scale": {
+          "const": "0_to_1"
+        },
+        "attribution_policy": {
+          "type": "string",
+          "enum": [
+            "causal_evidence_required",
+            "causal_or_direct_evidence",
+            "policy_defined",
+            "hybrid"
+          ]
+        },
+        "policy_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "measurement_window": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start_at",
+            "end_at"
+          ],
+          "properties": {
+            "start_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "end_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    },
+    "contribution_subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject_ref",
+        "subject_type",
+        "domain",
+        "source_node_refs"
+      ],
+      "properties": {
+        "subject_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "subject_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "organization",
+            "ai_agent",
+            "platform",
+            "telecom_provider",
+            "financial_provider",
+            "external_partner",
+            "dataset",
+            "system",
+            "event",
+            "action",
+            "output",
+            "other"
+          ]
+        },
+        "domain": {
+          "type": "string",
+          "enum": [
+            "telecom",
+            "finance",
+            "ai",
+            "platform",
+            "human",
+            "organization",
+            "external_partner",
+            "cross_domain",
+            "other"
+          ]
+        },
+        "source_node_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "structural_role_assignment_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1500
+        }
+      }
+    },
+    "claim_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope_type"
+      ],
+      "properties": {
+        "scope_type": {
+          "type": "string",
+          "enum": [
+            "single_node",
+            "single_edge",
+            "causal_path",
+            "outcome",
+            "measurement_window",
+            "cross_domain_process",
+            "other"
+          ]
+        },
+        "node_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "edge_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "path_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "outcome_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "start_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "effect_estimate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "estimate_type",
+        "unit"
+      ],
+      "properties": {
+        "estimate_type": {
+          "type": "string",
+          "enum": [
+            "absolute",
+            "relative",
+            "share_of_observed_effect",
+            "ordinal",
+            "qualitative"
+          ]
+        },
+        "value": {
+          "type": "number"
+        },
+        "range_low": {
+          "type": "number"
+        },
+        "range_high": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "positive",
+            "negative",
+            "mixed",
+            "neutral",
+            "unknown"
+          ]
+        },
+        "interpretation": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "measurement_status",
+        "method_category"
+      ],
+      "properties": {
+        "measurement_status": {
+          "type": "string",
+          "enum": [
+            "not_measured",
+            "estimated",
+            "measured",
+            "verified",
+            "inconclusive"
+          ]
+        },
+        "method_category": {
+          "type": "string",
+          "enum": [
+            "qualitative_review",
+            "counterfactual_analysis",
+            "controlled_experiment",
+            "observational_analysis",
+            "rule_based_estimate",
+            "model_based_estimate",
+            "direct_accounting",
+            "mixed",
+            "other"
+          ]
+        },
+        "metric_name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "baseline_description": {
+          "type": "string",
+          "maxLength": 1500
+        },
+        "effect_estimate": {
+          "$ref": "#/$defs/effect_estimate"
+        },
+        "measurement_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 50
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "measurement_status": {
+                "enum": [
+                  "estimated",
+                  "measured",
+                  "verified"
+                ]
+              }
+            },
+            "required": [
+              "measurement_status"
+            ]
+          },
+          "then": {
+            "required": [
+              "metric_name",
+              "effect_estimate"
+            ]
+          }
+        }
+      ]
+    },
+    "attribution_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis_type",
+        "rationale",
+        "causal_node_refs",
+        "causal_edge_refs",
+        "causal_path_refs"
+      ],
+      "properties": {
+        "basis_type": {
+          "type": "string",
+          "enum": [
+            "direct_evidence",
+            "causal_binding",
+            "counterfactual_support",
+            "policy_rule",
+            "measurement_result",
+            "mixed"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "causal_node_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "causal_edge_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "causal_path_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "counterevidence_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "alternative_explanation_refs": {
+          "$ref": "#/$defs/reference_list"
+        }
+      }
+    },
+    "counterfactual_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessment_status"
+      ],
+      "properties": {
+        "assessment_status": {
+          "type": "string",
+          "enum": [
+            "not_tested",
+            "supports_claim",
+            "does_not_support_claim",
+            "inconclusive"
+          ]
+        },
+        "method": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "result_note": {
+          "type": "string",
+          "maxLength": 2500
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/reference_list"
+        }
+      }
+    },
+    "overlap_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "overlap_status"
+      ],
+      "properties": {
+        "overlap_status": {
+          "type": "string",
+          "enum": [
+            "none",
+            "possible",
+            "confirmed",
+            "unknown"
+          ]
+        },
+        "overlapping_claim_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "handling_status": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "pending",
+            "separated",
+            "shared_effect",
+            "unresolved"
+          ]
+        },
+        "handling_note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "uncertainty_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uncertainty_level",
+        "confidence"
+      ],
+      "properties": {
+        "uncertainty_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "unknown"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "uncertainty_sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 50
+        },
+        "sensitivity_note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "contribution_claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim_id",
+        "subject_ref",
+        "contribution_type",
+        "contribution_class",
+        "claim_status",
+        "primary",
+        "direction",
+        "scope",
+        "attribution_basis",
+        "measurement",
+        "counterfactual_assessment",
+        "overlap_assessment",
+        "uncertainty",
+        "review_required"
+      ],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "subject_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "contribution_type": {
+          "type": "string",
+          "enum": [
+            "origin_input",
+            "data_support",
+            "human_intent",
+            "human_decision",
+            "processing",
+            "transformation",
+            "infrastructure",
+            "distribution",
+            "verification",
+            "governance",
+            "risk_reduction",
+            "outcome_enablement",
+            "negative_externality",
+            "other"
+          ]
+        },
+        "contribution_class": {
+          "type": "string",
+          "enum": [
+            "direct",
+            "enabling",
+            "supporting",
+            "verification",
+            "governance",
+            "negative",
+            "uncertain"
+          ]
+        },
+        "claim_status": {
+          "type": "string",
+          "enum": [
+            "proposed",
+            "supported",
+            "accepted",
+            "rejected",
+            "disputed",
+            "superseded"
+          ]
+        },
+        "primary": {
+          "type": "boolean",
+          "default": false
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "positive",
+            "negative",
+            "mixed",
+            "neutral",
+            "unknown"
+          ]
+        },
+        "scope": {
+          "$ref": "#/$defs/claim_scope"
+        },
+        "attribution_basis": {
+          "$ref": "#/$defs/attribution_basis"
+        },
+        "measurement": {
+          "$ref": "#/$defs/measurement"
+        },
+        "counterfactual_assessment": {
+          "$ref": "#/$defs/counterfactual_assessment"
+        },
+        "overlap_assessment": {
+          "$ref": "#/$defs/overlap_assessment"
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/uncertainty_assessment"
+        },
+        "review_required": {
+          "type": "boolean",
+          "default": false
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2500
+        }
+      }
+    },
+    "bundle_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bundle_status",
+        "contribution_boundary"
+      ],
+      "properties": {
+        "bundle_status": {
+          "type": "string",
+          "enum": [
+            "incomplete",
+            "reviewable",
+            "accepted",
+            "rejected",
+            "disputed"
+          ]
+        },
+        "contribution_boundary": {
+          "const": "no_allocation_or_royalty_determination"
+        },
+        "covered_outcome_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "blocking_issue_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "summary_note": {
+          "type": "string",
+          "maxLength": 3000
+        }
+      }
+    },
+    "unresolved_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue_id",
+        "issue_type",
+        "description",
+        "resolution_status"
+      ],
+      "properties": {
+        "issue_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "issue_type": {
+          "type": "string",
+          "enum": [
+            "insufficient_evidence",
+            "measurement_gap",
+            "counterfactual_gap",
+            "overlapping_contribution",
+            "subject_ambiguity",
+            "outcome_ambiguity",
+            "negative_effect",
+            "dispute",
+            "other"
+          ]
+        },
+        "related_ref": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2500
+        },
+        "resolution_status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "under_review",
+            "resolved",
+            "accepted_as_unknown"
+          ]
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_status"
+      ],
+      "properties": {
+        "review_status": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "pending",
+            "approved",
+            "rejected",
+            "disputed"
+          ]
+        },
+        "reviewer_ref": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "review_notes": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "audit_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "dispute_refs": {
+          "$ref": "#/$defs/reference_list"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "review_status": {
+                "enum": [
+                  "approved",
+                  "rejected",
+                  "disputed"
+                ]
+              }
+            },
+            "required": [
+              "review_status"
+            ]
+          },
+          "then": {
+            "required": [
+              "reviewer_ref",
+              "reviewed_at"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
