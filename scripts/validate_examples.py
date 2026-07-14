@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -26,7 +27,16 @@ VALIDATION_TARGETS = [
         "example": ROOT_DIR
         / "examples"
         / "economic-event-translation-record.example.yaml",
-    }
+    },
+    {
+        "name": "Structural Role Classification Record",
+        "schema": ROOT_DIR
+        / "schemas"
+        / "structural-role-classification-record.schema.json",
+        "example": ROOT_DIR
+        / "examples"
+        / "structural-role-classification-record.example.yaml",
+    },
 ]
 
 
@@ -55,6 +65,148 @@ def format_error_path(error: Any) -> str:
         return "<root>"
 
     return ".".join(str(part) for part in error.absolute_path)
+
+
+def find_duplicates(values: list[str]) -> list[str]:
+    counts = Counter(values)
+    return sorted(
+        value
+        for value, count in counts.items()
+        if count > 1
+    )
+
+
+def validate_structural_role_semantics(
+    record: dict[str, Any],
+) -> list[str]:
+    errors: list[str] = []
+
+    subjects = record.get("classification_subjects", [])
+    assignments = record.get("role_assignments", [])
+    unresolved_items = record.get("unresolved_items", [])
+    review = record.get("review", {})
+
+    subject_refs = [
+        subject.get("subject_ref")
+        for subject in subjects
+        if isinstance(subject.get("subject_ref"), str)
+    ]
+
+    duplicate_subject_refs = find_duplicates(subject_refs)
+
+    for subject_ref in duplicate_subject_refs:
+        errors.append(
+            "classification_subjects contains duplicate "
+            f"subject_ref: {subject_ref}"
+        )
+
+    assignment_ids = [
+        assignment.get("assignment_id")
+        for assignment in assignments
+        if isinstance(assignment.get("assignment_id"), str)
+    ]
+
+    duplicate_assignment_ids = find_duplicates(assignment_ids)
+
+    for assignment_id in duplicate_assignment_ids:
+        errors.append(
+            "role_assignments contains duplicate "
+            f"assignment_id: {assignment_id}"
+        )
+
+    known_subject_refs = set(subject_refs)
+
+    for index, assignment in enumerate(assignments):
+        subject_ref = assignment.get("subject_ref")
+
+        if subject_ref not in known_subject_refs:
+            errors.append(
+                f"role_assignments[{index}].subject_ref "
+                f"does not exist in classification_subjects: "
+                f"{subject_ref}"
+            )
+
+    primary_assignments: dict[str, list[str]] = defaultdict(list)
+
+    for assignment in assignments:
+        if assignment.get("primary") is not True:
+            continue
+
+        subject_ref = assignment.get("subject_ref")
+        assignment_id = assignment.get("assignment_id")
+
+        if isinstance(subject_ref, str):
+            primary_assignments[subject_ref].append(
+                str(assignment_id)
+            )
+
+    for subject_ref, ids in primary_assignments.items():
+        if len(ids) > 1:
+            errors.append(
+                f"subject_ref {subject_ref} has multiple "
+                f"primary role assignments: {', '.join(ids)}"
+            )
+
+    requires_review = any(
+        assignment.get("review_required") is True
+        for assignment in assignments
+    )
+
+    if (
+        requires_review
+        and review.get("review_status") == "not_required"
+    ):
+        errors.append(
+            "At least one role assignment requires review, "
+            "but review.review_status is not_required."
+        )
+
+    classification_status = record.get(
+        "classification_status"
+    )
+
+    if classification_status == "accepted":
+        incomplete_role_statuses = {
+            "proposed",
+            "disputed",
+            "superseded",
+        }
+
+        for index, assignment in enumerate(assignments):
+            role_status = assignment.get("role_status")
+
+            if role_status in incomplete_role_statuses:
+                errors.append(
+                    "Accepted classification contains an "
+                    f"unresolved role assignment at index {index}: "
+                    f"{role_status}"
+                )
+
+        for index, item in enumerate(unresolved_items):
+            resolution_status = item.get("resolution_status")
+
+            if resolution_status in {
+                "open",
+                "under_review",
+            }:
+                errors.append(
+                    "Accepted classification contains an "
+                    f"unresolved item at index {index}: "
+                    f"{resolution_status}"
+                )
+
+    return errors
+
+
+def validate_semantics(
+    example: dict[str, Any],
+) -> list[str]:
+    record_type = example.get("record_type")
+
+    if record_type == "structural_role_classification_record":
+        return validate_structural_role_semantics(example)
+
+    return []
 
 
 def validate_target(
@@ -86,21 +238,34 @@ def validate_target(
             format_checker=FormatChecker(),
         )
 
-        errors = sorted(
+        schema_errors = sorted(
             validator.iter_errors(example),
             key=lambda error: list(error.absolute_path),
         )
 
-        if errors:
+        if schema_errors:
             print("[validation-failed]")
 
-            for error in errors:
+            for error in schema_errors:
                 path = format_error_path(error)
                 print(f"  - path: {path}")
                 print(f"    message: {error.message}")
 
             return False
 
+        print("[example-schema-ok]")
+
+        semantic_errors = validate_semantics(example)
+
+        if semantic_errors:
+            print("[semantic-validation-failed]")
+
+            for error in semantic_errors:
+                print(f"  - {error}")
+
+            return False
+
+        print("[semantic-ok]")
         print("[example-ok]")
         return True
 
@@ -109,14 +274,22 @@ def validate_target(
         print(f"  message: {error.message}")
         return False
 
-    except (OSError, ValueError, json.JSONDecodeError, yaml.YAMLError) as error:
+    except (
+        OSError,
+        ValueError,
+        json.JSONDecodeError,
+        yaml.YAMLError,
+    ) as error:
         print("[load-error]")
         print(f"  message: {error}")
         return False
 
 
 def main() -> int:
-    print("=== Economic Trace Translation Protocol Validation ===")
+    print(
+        "=== Economic Trace Translation "
+        "Protocol Validation ==="
+    )
     print()
 
     all_valid = True
@@ -135,7 +308,10 @@ def main() -> int:
         print("[result] Validation failed.")
         return 1
 
-    print("[result] All schemas and examples are valid.")
+    print(
+        "[result] All schemas, examples, "
+        "and semantic checks are valid."
+    )
     return 0
 
 
