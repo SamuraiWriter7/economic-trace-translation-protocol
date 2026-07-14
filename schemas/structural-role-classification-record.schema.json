@@ -1,0 +1,604 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/SamuraiWriter7/economic-trace-translation-protocol/main/schemas/structural-role-classification-record.schema.json",
+  "title": "Structural Role Classification Record",
+  "description": "A machine-readable record for assigning context-dependent Civilization OS roles to normalized economic events, actors, systems, datasets, outputs, and processing steps without asserting causality, contribution, or royalty eligibility.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "classification_id",
+    "created_at",
+    "source_translation",
+    "classification_profile",
+    "classification_subjects",
+    "role_assignments",
+    "review",
+    "classification_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.2.0"
+    },
+    "record_type": {
+      "const": "structural_role_classification_record"
+    },
+    "classification_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_translation": {
+      "$ref": "#/$defs/source_translation"
+    },
+    "classification_profile": {
+      "$ref": "#/$defs/classification_profile"
+    },
+    "classification_subjects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/classification_subject"
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "role_assignments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/role_assignment"
+      },
+      "minItems": 1,
+      "maxItems": 200
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unresolved_item"
+      },
+      "uniqueItems": true,
+      "maxItems": 100
+    },
+    "review": {
+      "$ref": "#/$defs/review"
+    },
+    "classification_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "review_required",
+        "accepted",
+        "rejected",
+        "disputed",
+        "superseded"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "supersedes_ref": {
+      "$ref": "#/$defs/reference"
+    },
+    "superseded_by_ref": {
+      "$ref": "#/$defs/reference"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "classification_status": {
+            "const": "accepted"
+          }
+        },
+        "required": [
+          "classification_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "review": {
+            "properties": {
+              "review_status": {
+                "enum": [
+                  "not_required",
+                  "approved"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "classification_status": {
+            "const": "superseded"
+          }
+        },
+        "required": [
+          "classification_status"
+        ]
+      },
+      "then": {
+        "required": [
+          "superseded_by_ref"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_id",
+        "ref_type"
+      ],
+      "properties": {
+        "ref_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "translation_record",
+            "classification_record",
+            "event",
+            "actor",
+            "dataset",
+            "system",
+            "output",
+            "processing_step",
+            "policy",
+            "rule",
+            "evidence",
+            "audit",
+            "other"
+          ]
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "reference_list": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reference"
+      },
+      "uniqueItems": true,
+      "maxItems": 100
+    },
+    "source_translation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "translation_id",
+        "schema_version"
+      ],
+      "properties": {
+        "translation_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "schema_version": {
+          "const": "0.1.0"
+        },
+        "record_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "translation_status": {
+          "type": "string",
+          "enum": [
+            "normalized",
+            "review_required",
+            "accepted"
+          ]
+        }
+      }
+    },
+    "classifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classifier_ref",
+        "classifier_type"
+      ],
+      "properties": {
+        "classifier_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "classifier_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "organization",
+            "ai_agent",
+            "automated_system",
+            "hybrid",
+            "other"
+          ]
+        },
+        "system_name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "system_version": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "classification_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_id",
+        "profile_version",
+        "classification_method",
+        "classifier",
+        "confidence_scale"
+      ],
+      "properties": {
+        "profile_id": {
+          "const": "ettp-structural-role"
+        },
+        "profile_version": {
+          "const": "0.2.0"
+        },
+        "classification_method": {
+          "type": "string",
+          "enum": [
+            "rule_based",
+            "model_assisted",
+            "human_assigned",
+            "hybrid"
+          ]
+        },
+        "classifier": {
+          "$ref": "#/$defs/classifier"
+        },
+        "confidence_scale": {
+          "const": "0_to_1"
+        },
+        "policy_refs": {
+          "$ref": "#/$defs/reference_list"
+        }
+      }
+    },
+    "classification_subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject_ref",
+        "subject_type",
+        "domain"
+      ],
+      "properties": {
+        "subject_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "subject_type": {
+          "type": "string",
+          "enum": [
+            "event",
+            "actor",
+            "action",
+            "dataset",
+            "system",
+            "output",
+            "processing_step",
+            "relationship",
+            "other"
+          ]
+        },
+        "domain": {
+          "type": "string",
+          "enum": [
+            "telecom",
+            "finance",
+            "ai",
+            "platform",
+            "human",
+            "organization",
+            "external_partner",
+            "cross_domain",
+            "other"
+          ]
+        },
+        "source_path": {
+          "type": "string",
+          "pattern": "^(/([^/~]|~[01])*)*$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "assignment_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope_type"
+      ],
+      "properties": {
+        "scope_type": {
+          "type": "string",
+          "enum": [
+            "full_event",
+            "partial_event",
+            "actor_participation",
+            "action_only",
+            "dataset_only",
+            "system_function",
+            "output_only",
+            "processing_step",
+            "relationship_only",
+            "other"
+          ]
+        },
+        "scope_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "uniqueItems": true,
+          "maxItems": 50
+        }
+      }
+    },
+    "classification_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis_type",
+        "rationale"
+      ],
+      "properties": {
+        "basis_type": {
+          "type": "string",
+          "enum": [
+            "direct_evidence",
+            "declared_role",
+            "policy_rule",
+            "structural_inference",
+            "mixed"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3000
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "rule_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "counterevidence_refs": {
+          "$ref": "#/$defs/reference_list"
+        }
+      }
+    },
+    "role_assignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assignment_id",
+        "subject_ref",
+        "role",
+        "role_status",
+        "confidence",
+        "scope",
+        "classification_source",
+        "basis"
+      ],
+      "properties": {
+        "assignment_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "subject_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "origin",
+            "derivative",
+            "supporting",
+            "verification",
+            "audit",
+            "distribution",
+            "infrastructure",
+            "royalty_endpoint"
+          ]
+        },
+        "role_status": {
+          "type": "string",
+          "enum": [
+            "proposed",
+            "accepted",
+            "rejected",
+            "disputed",
+            "superseded"
+          ]
+        },
+        "primary": {
+          "type": "boolean",
+          "default": false
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "scope": {
+          "$ref": "#/$defs/assignment_scope"
+        },
+        "classification_source": {
+          "type": "string",
+          "enum": [
+            "event_fact",
+            "actor_declaration",
+            "policy_mapping",
+            "system_inference",
+            "human_judgment",
+            "hybrid"
+          ]
+        },
+        "basis": {
+          "$ref": "#/$defs/classification_basis"
+        },
+        "review_required": {
+          "type": "boolean",
+          "default": false
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "unresolved_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue_id",
+        "issue_type",
+        "description",
+        "resolution_status"
+      ],
+      "properties": {
+        "issue_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "issue_type": {
+          "type": "string",
+          "enum": [
+            "ambiguous_role",
+            "insufficient_evidence",
+            "conflicting_assignments",
+            "missing_subject",
+            "scope_uncertainty",
+            "other"
+          ]
+        },
+        "subject_ref": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "resolution_status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "under_review",
+            "resolved",
+            "accepted_as_unknown"
+          ]
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_status"
+      ],
+      "properties": {
+        "review_status": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "pending",
+            "approved",
+            "rejected",
+            "disputed"
+          ]
+        },
+        "reviewer_ref": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "review_notes": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "audit_refs": {
+          "$ref": "#/$defs/reference_list"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "review_status": {
+                "enum": [
+                  "approved",
+                  "rejected",
+                  "disputed"
+                ]
+              }
+            },
+            "required": [
+              "review_status"
+            ]
+          },
+          "then": {
+            "required": [
+              "reviewer_ref",
+              "reviewed_at"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
