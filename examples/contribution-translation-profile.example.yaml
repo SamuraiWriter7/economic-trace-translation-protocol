@@ -1,0 +1,508 @@
+schema_version: "0.4.0"
+record_type: contribution_translation_profile
+
+profile_id: contribution-profile-2026-0001
+created_at: "2026-07-14T02:40:00Z"
+
+source_binding:
+  binding_id: causal-binding-2026-0001
+  schema_version: "0.3.0"
+  binding_status: review_required
+
+  record_ref:
+    ref_id: causal-binding-2026-0001
+    ref_type: causal_binding_record
+    uri: https://example.org/records/causal-binding-2026-0001
+
+  included_node_refs:
+    - node-human-intent
+    - node-telecom-interaction
+    - node-ai-recommendation
+    - node-financial-action
+    - node-economic-outcome
+
+  included_edge_refs:
+    - edge-intent-to-telecom
+    - edge-telecom-to-ai
+    - edge-ai-to-finance
+    - edge-finance-to-outcome
+
+  included_path_refs:
+    - path-primary-001
+
+  outcome_refs:
+    - node-economic-outcome
+
+translation_profile:
+  profile_name: ettp-contribution-translation
+  profile_version: "0.4.0"
+  translation_method: hybrid
+  confidence_scale: 0_to_1
+  attribution_policy: causal_evidence_required
+
+  translator:
+    translator_ref: contribution-review-system-001
+    translator_type: hybrid
+    system_name: Example Contribution Review System
+    system_version: "1.0.0"
+
+  policy_refs:
+    - ref_id: contribution-translation-policy-001
+      ref_type: policy
+      uri: https://example.org/policies/contribution-translation-policy-001
+
+  measurement_window:
+    start_at: "2026-07-14T01:00:00Z"
+    end_at: "2026-07-14T01:05:00Z"
+
+contribution_subjects:
+  - subject_ref: human-user-001
+    subject_type: human
+    domain: human
+
+    source_node_refs:
+      - node-human-intent
+      - node-financial-action
+
+    structural_role_assignment_refs:
+      - role-assignment-human-origin-001
+
+    description: >-
+      The human supplied the initiating intent and retained final
+      authority over the financial decision.
+
+  - subject_ref: telecom-service-001
+    subject_type: telecom_provider
+    domain: telecom
+
+    source_node_refs:
+      - node-telecom-interaction
+
+    structural_role_assignment_refs:
+      - role-assignment-telecom-distribution-001
+
+    description: >-
+      The telecom service routed the request into the AI service.
+
+  - subject_ref: ai-recommendation-system-001
+    subject_type: ai_agent
+    domain: ai
+
+    source_node_refs:
+      - node-ai-recommendation
+
+    structural_role_assignment_refs:
+      - role-assignment-ai-derivative-001
+
+    description: >-
+      The AI system transformed the request and available information
+      into a ranked recommendation.
+
+  - subject_ref: financial-provider-001
+    subject_type: financial_provider
+    domain: finance
+
+    source_node_refs:
+      - node-financial-action
+      - node-economic-outcome
+
+    structural_role_assignment_refs:
+      - role-assignment-finance-processing-001
+
+    description: >-
+      The provider processed the application and created the resulting
+      service relationship.
+
+contribution_claims:
+  - claim_id: contribution-claim-human-001
+    subject_ref: human-user-001
+    contribution_type: human_intent
+    contribution_class: direct
+    claim_status: supported
+    primary: true
+    direction: positive
+
+    scope:
+      scope_type: causal_path
+
+      node_refs:
+        - node-human-intent
+        - node-financial-action
+
+      edge_refs:
+        - edge-intent-to-telecom
+        - edge-ai-to-finance
+
+      path_refs:
+        - path-primary-001
+
+      outcome_refs:
+        - node-economic-outcome
+
+    attribution_basis:
+      basis_type: mixed
+
+      rationale: >-
+        The recorded human intent initiated the process, and the human
+        retained final authority over the product selection.
+
+      causal_node_refs:
+        - node-human-intent
+        - node-financial-action
+
+      causal_edge_refs:
+        - edge-intent-to-telecom
+        - edge-ai-to-finance
+
+      causal_path_refs:
+        - path-primary-001
+
+      evidence_refs:
+        - ref_id: human-intent-record-001
+          ref_type: evidence
+          uri: https://example.org/evidence/human-intent-record-001
+
+        - ref_id: human-decision-gate-001
+          ref_type: evidence
+          uri: https://example.org/evidence/human-decision-gate-001
+
+    measurement:
+      measurement_status: estimated
+      method_category: qualitative_review
+      metric_name: decision_control_significance
+
+      effect_estimate:
+        estimate_type: ordinal
+        value: 3
+        unit: materiality_level
+        direction: positive
+
+        interpretation: >-
+          The human contribution is assessed as materially significant
+          because the process began from human intent and required a
+          human decision gate.
+
+      limitations:
+        - The ordinal estimate is not a monetary valuation.
+        - No allocation percentage is inferred.
+
+    counterfactual_assessment:
+      assessment_status: supports_claim
+      method: initiation dependency review
+
+      result_note: >-
+        Without the recorded human intent, the evaluated process would
+        not have started.
+
+    overlap_assessment:
+      overlap_status: possible
+
+      overlapping_claim_refs:
+        - contribution-claim-ai-001
+
+      handling_status: pending
+
+      handling_note: >-
+        The human decision and AI recommendation may share influence
+        over the selected product.
+
+    uncertainty:
+      uncertainty_level: medium
+      confidence: 0.88
+
+      uncertainty_sources:
+        - Shared influence between human preference and AI recommendation.
+
+    review_required: true
+
+  - claim_id: contribution-claim-telecom-001
+    subject_ref: telecom-service-001
+    contribution_type: distribution
+    contribution_class: enabling
+    claim_status: supported
+    primary: true
+    direction: positive
+
+    scope:
+      scope_type: single_edge
+
+      node_refs:
+        - node-telecom-interaction
+
+      edge_refs:
+        - edge-telecom-to-ai
+
+      path_refs:
+        - path-primary-001
+
+    attribution_basis:
+      basis_type: causal_binding
+
+      rationale: >-
+        The routed request enabled the downstream AI invocation.
+
+      causal_node_refs:
+        - node-telecom-interaction
+
+      causal_edge_refs:
+        - edge-telecom-to-ai
+
+      causal_path_refs:
+        - path-primary-001
+
+      evidence_refs:
+        - ref_id: routing-log-001
+          ref_type: evidence
+          uri: https://example.org/evidence/routing-log-001
+
+    measurement:
+      measurement_status: measured
+      method_category: direct_accounting
+      metric_name: successfully_routed_requests
+
+      effect_estimate:
+        estimate_type: absolute
+        value: 1
+        unit: request
+        direction: positive
+
+        interpretation: >-
+          One request was successfully routed into the AI service.
+
+      measurement_refs:
+        - ref_id: routing-measurement-001
+          ref_type: measurement
+          uri: https://example.org/measurements/routing-measurement-001
+
+      limitations:
+        - Request count does not establish monetary value.
+
+    counterfactual_assessment:
+      assessment_status: supports_claim
+      method: invocation dependency check
+
+      result_note: >-
+        The AI invocation depended on the routed request identifier.
+
+    overlap_assessment:
+      overlap_status: none
+      handling_status: not_required
+
+    uncertainty:
+      uncertainty_level: low
+      confidence: 0.94
+
+    review_required: false
+
+  - claim_id: contribution-claim-ai-001
+    subject_ref: ai-recommendation-system-001
+    contribution_type: transformation
+    contribution_class: supporting
+    claim_status: proposed
+    primary: true
+    direction: positive
+
+    scope:
+      scope_type: causal_path
+
+      node_refs:
+        - node-ai-recommendation
+
+      edge_refs:
+        - edge-ai-to-finance
+
+      path_refs:
+        - path-primary-001
+
+      outcome_refs:
+        - node-economic-outcome
+
+    attribution_basis:
+      basis_type: causal_binding
+
+      rationale: >-
+        The AI recommendation appeared before the financial action and
+        included the product later selected by the human.
+
+      causal_node_refs:
+        - node-ai-recommendation
+        - node-financial-action
+
+      causal_edge_refs:
+        - edge-ai-to-finance
+
+      causal_path_refs:
+        - path-primary-001
+
+      evidence_refs:
+        - ref_id: recommendation-display-log-001
+          ref_type: evidence
+          uri: https://example.org/evidence/recommendation-display-log-001
+
+      alternative_explanation_refs:
+        - ref_id: prior-user-preference-001
+          ref_type: external_record
+          description: >-
+            The human may already have preferred the selected product.
+
+    measurement:
+      measurement_status: inconclusive
+      method_category: observational_analysis
+
+      limitations:
+        - No no-recommendation comparison group is available.
+        - Temporal order alone does not establish effect size.
+
+    counterfactual_assessment:
+      assessment_status: inconclusive
+      method: no-recommendation comparison unavailable
+
+      result_note: >-
+        The available evidence does not establish whether the human
+        would have selected a different product without the recommendation.
+
+    overlap_assessment:
+      overlap_status: possible
+
+      overlapping_claim_refs:
+        - contribution-claim-human-001
+
+      handling_status: unresolved
+
+      handling_note: >-
+        The AI recommendation and prior human preference may describe
+        overlapping influence on the same decision.
+
+    uncertainty:
+      uncertainty_level: high
+      confidence: 0.62
+
+      uncertainty_sources:
+        - Missing counterfactual comparison.
+        - Prior human preference may explain the same outcome.
+
+      sensitivity_note: >-
+        The claim may change materially if a valid comparison cohort
+        becomes available.
+
+    review_required: true
+
+  - claim_id: contribution-claim-finance-001
+    subject_ref: financial-provider-001
+    contribution_type: outcome_enablement
+    contribution_class: direct
+    claim_status: supported
+    primary: true
+    direction: positive
+
+    scope:
+      scope_type: outcome
+
+      node_refs:
+        - node-financial-action
+        - node-economic-outcome
+
+      edge_refs:
+        - edge-finance-to-outcome
+
+      path_refs:
+        - path-primary-001
+
+      outcome_refs:
+        - node-economic-outcome
+
+    attribution_basis:
+      basis_type: direct_evidence
+
+      rationale: >-
+        The accepted service relationship was created through the
+        provider's application-processing action.
+
+      causal_node_refs:
+        - node-financial-action
+        - node-economic-outcome
+
+      causal_edge_refs:
+        - edge-finance-to-outcome
+
+      causal_path_refs:
+        - path-primary-001
+
+      evidence_refs:
+        - ref_id: application-result-log-001
+          ref_type: evidence
+          uri: https://example.org/evidence/application-result-log-001
+
+    measurement:
+      measurement_status: measured
+      method_category: direct_accounting
+      metric_name: accepted_service_relationships
+
+      effect_estimate:
+        estimate_type: absolute
+        value: 1
+        unit: accepted_relationship
+        direction: positive
+
+        interpretation: >-
+          One service relationship was created from the application.
+
+      limitations:
+        - The count does not establish net economic value or payout share.
+
+    counterfactual_assessment:
+      assessment_status: supports_claim
+      method: application-to-outcome linkage
+
+      result_note: >-
+        The outcome record directly references the processed application.
+
+    overlap_assessment:
+      overlap_status: none
+      handling_status: not_required
+
+    uncertainty:
+      uncertainty_level: low
+      confidence: 0.92
+
+    review_required: false
+
+bundle_summary:
+  bundle_status: reviewable
+  contribution_boundary: no_allocation_or_royalty_determination
+
+  covered_outcome_refs:
+    - node-economic-outcome
+
+  blocking_issue_refs:
+    - unresolved-contribution-001
+
+  summary_note: >-
+    The profile contains reviewable contribution claims for the human,
+    telecom, AI, and financial participants. The AI effect and overlap
+    with human decision-making remain unresolved.
+
+unresolved_items:
+  - issue_id: unresolved-contribution-001
+    issue_type: overlapping_contribution
+    related_ref: contribution-claim-ai-001
+
+    description: >-
+      The relative influence of the AI recommendation and prior human
+      preference has not been separated.
+
+    resolution_status: under_review
+
+review:
+  review_status: pending
+  reviewer_ref: human-contribution-reviewer-001
+
+  review_notes: >-
+    Review the human and AI overlap before accepting the bundle.
+
+profile_status: review_required
+
+notes: >-
+  This profile translates causal participation into contribution claims.
+  It does not determine allocation readiness, royalty entitlement,
+  payment amount, ownership, or legal rights.
