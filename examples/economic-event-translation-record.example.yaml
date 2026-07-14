@@ -1,0 +1,159 @@
+schema_version: "0.1.0"
+record_type: economic_event_translation_record
+
+translation_id: ettp-2026-0001
+created_at: "2026-07-14T01:40:00Z"
+
+source_event:
+  event_id: source-event-0001
+  event_type: ai_training_input
+  occurred_at: "2026-07-14T01:30:00Z"
+  domain: ai
+  source_system: example-model-development-platform
+  jurisdiction: JP
+
+  actors:
+    - actor_ref: org-example-ai-lab
+      actor_type: organization
+      role_in_event: operator
+
+    - actor_ref: dataset-provider-001
+      actor_type: external_partner
+      role_in_event: provider
+
+  raw_event_ref:
+    ref_id: raw-event-log-0001
+    ref_type: event
+    uri: https://example.org/events/raw-event-log-0001
+
+  payload_digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  received_at: "2026-07-14T01:31:00Z"
+
+normalized_event:
+  normalization_profile: ettp-core-0.1
+  normalized_event_type: processing
+  action: register_dataset_for_model_evaluation
+  subject_ref: org-example-ai-lab
+
+  object_refs:
+    - dataset-example-001
+    - model-example-001
+
+  result_status: completed
+
+  economic_effect:
+    effect_type: model_improvement
+    direction: increase
+    description: >-
+      The dataset was registered as an input candidate
+      for model evaluation.
+
+  summary: >-
+    An external dataset was normalized as a
+    model-evaluation processing event.
+
+purpose_context:
+  declared_purpose: >-
+    Evaluate model quality using a non-targeting
+    statistical workflow.
+
+  purpose_category: model_evaluation
+  purpose_status: declared
+
+  purpose_ref:
+    ref_id: purpose-policy-001
+    ref_type: policy
+    uri: https://example.org/policies/purpose-policy-001
+
+  secondary_purposes:
+    - statistical quality measurement
+
+  purpose_change_detected: false
+
+governance_context:
+  consent_status: not_obtained
+
+  asserted_legal_basis:
+    basis_code: JP_STATISTICAL_CREATION_EXCEPTION
+    basis_status: under_review
+
+    legal_source_ref:
+      ref_id: legal-source-001
+      ref_type: legal_source
+      uri: https://example.org/legal/legal-source-001
+
+    exception_basis_ref:
+      ref_id: exception-policy-001
+      ref_type: policy
+      uri: https://example.org/policies/exception-policy-001
+
+    scope_note: >-
+      The basis is recorded as an organizational assertion
+      and is not a final legal determination.
+
+  determination_authority:
+    authority_type: human_reviewer
+    authority_ref: privacy-review-board-001
+
+  determination_status: provisional
+  review_status: pending
+  processing_eligibility: conditionally_eligible
+
+  required_controls:
+    - prohibit personal targeting
+    - prevent re-identification
+    - retain processing evidence
+
+privacy_transformation:
+  status: applied
+
+  methods:
+    - identifier_removal
+    - aggregation
+    - access_control
+
+  reidentification_control: controlled
+  personal_targeting_constraint: prohibited
+
+  transformation_ref:
+    ref_id: privacy-transform-001
+    ref_type: processing_record
+    uri: https://example.org/processing/privacy-transform-001
+
+  verification_ref:
+    ref_id: privacy-verification-001
+    ref_type: evidence
+    uri: https://example.org/evidence/privacy-verification-001
+
+data_context:
+  data_category: mixed
+  sensitivity_class: restricted
+  sensitive_data_flag: true
+  minor_data_flag: false
+  biometric_data_flag: false
+  data_subject_scope: population
+
+  dataset_refs:
+    - ref_id: dataset-example-001
+      ref_type: dataset
+      uri: https://example.org/datasets/dataset-example-001
+
+evidence_refs:
+  - ref_id: disclosure-001
+    ref_type: disclosure
+    uri: https://example.org/disclosures/disclosure-001
+
+  - ref_id: processing-log-001
+    ref_type: processing_record
+    uri: https://example.org/processing/processing-log-001
+
+audit_refs:
+  - ref_id: audit-placeholder-001
+    ref_type: audit
+    description: Reserved for the v0.1 review result.
+
+translation_status: review_required
+
+notes: >-
+  This example demonstrates translation only.
+  Structural role classification is introduced in v0.2.
