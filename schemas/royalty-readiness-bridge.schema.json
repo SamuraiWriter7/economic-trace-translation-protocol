@@ -1,0 +1,1069 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/SamuraiWriter7/economic-trace-translation-protocol/main/schemas/royalty-readiness-bridge.schema.json",
+  "title": "Royalty Readiness Bridge Record",
+  "description": "A machine-readable record for determining whether contribution claims are ready for downstream allocation and royalty processing without calculating allocation shares, royalty amounts, or executing payment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "bridge_id",
+    "created_at",
+    "source_contribution_profile",
+    "readiness_profile",
+    "royalty_candidates",
+    "readiness_gates",
+    "claim_readiness_assessments",
+    "readiness_summary",
+    "royalty_handoff",
+    "review",
+    "bridge_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.5.0"
+    },
+    "record_type": {
+      "const": "royalty_readiness_bridge_record"
+    },
+    "bridge_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_contribution_profile": {
+      "$ref": "#/$defs/source_contribution_profile"
+    },
+    "readiness_profile": {
+      "$ref": "#/$defs/readiness_profile"
+    },
+    "royalty_candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/royalty_candidate"
+      },
+      "minItems": 1,
+      "maxItems": 500
+    },
+    "readiness_gates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/readiness_gate"
+      },
+      "minItems": 1,
+      "maxItems": 1000
+    },
+    "claim_readiness_assessments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/claim_readiness_assessment"
+      },
+      "minItems": 1,
+      "maxItems": 1000
+    },
+    "unresolved_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unresolved_item"
+      },
+      "maxItems": 500
+    },
+    "readiness_summary": {
+      "$ref": "#/$defs/readiness_summary"
+    },
+    "royalty_handoff": {
+      "$ref": "#/$defs/royalty_handoff"
+    },
+    "review": {
+      "$ref": "#/$defs/review"
+    },
+    "bridge_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "review_required",
+        "conditionally_ready",
+        "ready",
+        "blocked",
+        "rejected",
+        "disputed",
+        "superseded"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "supersedes_ref": {
+      "$ref": "#/$defs/reference"
+    },
+    "superseded_by_ref": {
+      "$ref": "#/$defs/reference"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "bridge_status": {
+            "const": "ready"
+          }
+        },
+        "required": [
+          "bridge_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "readiness_summary": {
+            "properties": {
+              "overall_status": {
+                "const": "ready"
+              }
+            }
+          },
+          "royalty_handoff": {
+            "properties": {
+              "handoff_status": {
+                "enum": [
+                  "ready",
+                  "transmitted"
+                ]
+              }
+            }
+          },
+          "review": {
+            "properties": {
+              "review_status": {
+                "enum": [
+                  "not_required",
+                  "approved"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "bridge_status": {
+            "const": "superseded"
+          }
+        },
+        "required": [
+          "bridge_status"
+        ]
+      },
+      "then": {
+        "required": [
+          "superseded_by_ref"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_id",
+        "ref_type"
+      ],
+      "properties": {
+        "ref_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "contribution_profile",
+            "causal_binding_record",
+            "translation_record",
+            "classification_record",
+            "claim",
+            "subject",
+            "candidate",
+            "gate",
+            "endpoint",
+            "policy",
+            "rule",
+            "evidence",
+            "audit",
+            "dispute",
+            "allocation_case",
+            "value_event",
+            "handoff_payload",
+            "external_record",
+            "other"
+          ]
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1200
+        }
+      }
+    },
+    "reference_list": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reference"
+      },
+      "uniqueItems": true,
+      "maxItems": 200
+    },
+    "source_claim_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim_ref",
+        "subject_ref",
+        "claim_status",
+        "contribution_type",
+        "direction"
+      ],
+      "properties": {
+        "claim_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "subject_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "claim_status": {
+          "type": "string",
+          "enum": [
+            "proposed",
+            "supported",
+            "accepted",
+            "rejected",
+            "disputed",
+            "superseded"
+          ]
+        },
+        "contribution_type": {
+          "type": "string",
+          "enum": [
+            "origin_input",
+            "data_support",
+            "human_intent",
+            "human_decision",
+            "processing",
+            "transformation",
+            "infrastructure",
+            "distribution",
+            "verification",
+            "governance",
+            "risk_reduction",
+            "outcome_enablement",
+            "negative_externality",
+            "other"
+          ]
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "positive",
+            "negative",
+            "mixed",
+            "neutral",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "source_contribution_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_id",
+        "schema_version",
+        "profile_status",
+        "record_ref",
+        "claims"
+      ],
+      "properties": {
+        "profile_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "schema_version": {
+          "const": "0.4.0"
+        },
+        "profile_status": {
+          "type": "string",
+          "enum": [
+            "review_required",
+            "accepted",
+            "disputed"
+          ]
+        },
+        "record_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_claim_summary"
+          },
+          "minItems": 1,
+          "maxItems": 1000
+        },
+        "outcome_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 500
+        },
+        "unresolved_issue_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 500
+        }
+      }
+    },
+    "assessor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessor_ref",
+        "assessor_type"
+      ],
+      "properties": {
+        "assessor_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "assessor_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "organization",
+            "ai_agent",
+            "automated_system",
+            "hybrid",
+            "other"
+          ]
+        },
+        "system_name": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "system_version": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "readiness_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_name",
+        "profile_version",
+        "assessment_method",
+        "assessor",
+        "target_protocol",
+        "confidence_scale"
+      ],
+      "properties": {
+        "profile_name": {
+          "const": "ettp-royalty-readiness"
+        },
+        "profile_version": {
+          "const": "0.5.0"
+        },
+        "assessment_method": {
+          "type": "string",
+          "enum": [
+            "rule_based",
+            "model_assisted",
+            "human_assigned",
+            "hybrid"
+          ]
+        },
+        "assessor": {
+          "$ref": "#/$defs/assessor"
+        },
+        "target_protocol": {
+          "type": "string",
+          "enum": [
+            "allocation_readiness_protocol",
+            "royalty_os",
+            "agentic_royalty_path",
+            "custom",
+            "other"
+          ]
+        },
+        "confidence_scale": {
+          "const": "0_to_1"
+        },
+        "policy_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "assessment_scope_note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "royalty_endpoint_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint_ref",
+        "endpoint_type",
+        "resolution_status"
+      ],
+      "properties": {
+        "endpoint_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "endpoint_type": {
+          "type": "string",
+          "enum": [
+            "platform_account",
+            "wallet",
+            "bank_account_token",
+            "points_account",
+            "contract_account",
+            "collective_pool",
+            "public_interest_pool",
+            "deferred_registry",
+            "other"
+          ]
+        },
+        "resolution_status": {
+          "type": "string",
+          "enum": [
+            "unresolved",
+            "provisional",
+            "verified",
+            "rejected"
+          ]
+        },
+        "verification_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 50
+        }
+      }
+    },
+    "royalty_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "subject_ref",
+        "candidate_type",
+        "claim_refs",
+        "candidate_status",
+        "review_required"
+      ],
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "subject_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "candidate_type": {
+          "type": "string",
+          "enum": [
+            "individual",
+            "organization",
+            "system_operator",
+            "data_collective",
+            "public_interest_pool",
+            "deferred_registry",
+            "other"
+          ]
+        },
+        "claim_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "candidate_status": {
+          "type": "string",
+          "enum": [
+            "proposed",
+            "eligible",
+            "conditionally_eligible",
+            "blocked",
+            "excluded"
+          ]
+        },
+        "endpoint": {
+          "$ref": "#/$defs/royalty_endpoint_candidate"
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 50
+        },
+        "review_required": {
+          "type": "boolean",
+          "default": false
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "readiness_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_id",
+        "gate_type",
+        "scope_type",
+        "gate_status",
+        "blocking",
+        "confidence",
+        "rationale"
+      ],
+      "properties": {
+        "gate_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "gate_type": {
+          "type": "string",
+          "enum": [
+            "source_trace_integrity",
+            "governance_eligibility",
+            "causal_binding_validity",
+            "contribution_claim_acceptance",
+            "overlap_resolution",
+            "dispute_clearance",
+            "subject_identity_resolution",
+            "royalty_endpoint_resolution",
+            "audit_completion",
+            "human_approval",
+            "allocation_policy_availability",
+            "negative_externality_review",
+            "other"
+          ]
+        },
+        "scope_type": {
+          "type": "string",
+          "enum": [
+            "bridge",
+            "claim",
+            "candidate",
+            "subject",
+            "endpoint",
+            "outcome",
+            "other"
+          ]
+        },
+        "related_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "gate_status": {
+          "type": "string",
+          "enum": [
+            "not_assessed",
+            "passed",
+            "conditional",
+            "failed",
+            "waived",
+            "not_applicable"
+          ]
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3000
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "review_required": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "claim_readiness_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessment_id",
+        "claim_ref",
+        "subject_ref",
+        "candidate_ref",
+        "readiness_status",
+        "allocation_basis_status",
+        "gate_refs",
+        "confidence",
+        "review_required"
+      ],
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "claim_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "subject_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "candidate_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "readiness_status": {
+          "type": "string",
+          "enum": [
+            "not_assessed",
+            "conditionally_ready",
+            "ready",
+            "blocked",
+            "excluded"
+          ]
+        },
+        "allocation_basis_status": {
+          "type": "string",
+          "enum": [
+            "not_assessed",
+            "sufficient",
+            "conditionally_sufficient",
+            "insufficient",
+            "disputed"
+          ]
+        },
+        "gate_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "blocking_reason_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "evidence_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "review_required": {
+          "type": "boolean",
+          "default": false
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2500
+        }
+      }
+    },
+    "unresolved_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue_id",
+        "issue_type",
+        "description",
+        "blocking",
+        "resolution_status"
+      ],
+      "properties": {
+        "issue_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "issue_type": {
+          "type": "string",
+          "enum": [
+            "missing_trace",
+            "governance_uncertainty",
+            "causal_dispute",
+            "claim_dispute",
+            "overlap_unresolved",
+            "identity_unresolved",
+            "endpoint_unresolved",
+            "audit_pending",
+            "human_review_pending",
+            "allocation_policy_missing",
+            "negative_externality",
+            "other"
+          ]
+        },
+        "related_ref": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2500
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "resolution_status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "under_review",
+            "resolved",
+            "accepted_as_unknown"
+          ]
+        }
+      }
+    },
+    "readiness_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "overall_status",
+        "readiness_boundary",
+        "ready_claim_count",
+        "conditional_claim_count",
+        "blocked_claim_count",
+        "excluded_claim_count"
+      ],
+      "properties": {
+        "overall_status": {
+          "type": "string",
+          "enum": [
+            "not_ready",
+            "conditionally_ready",
+            "ready",
+            "blocked"
+          ]
+        },
+        "readiness_boundary": {
+          "const": "no_allocation_share_royalty_amount_or_payment_execution"
+        },
+        "ready_claim_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conditional_claim_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocked_claim_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excluded_claim_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocking_gate_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "blocking_issue_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 200
+        },
+        "ready_candidate_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 500
+        },
+        "required_downstream_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "summary_note": {
+          "type": "string",
+          "maxLength": 3000
+        }
+      }
+    },
+    "royalty_handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handoff_id",
+        "handoff_status",
+        "target_protocol",
+        "included_claim_refs",
+        "included_candidate_refs",
+        "execution_boundary"
+      ],
+      "properties": {
+        "handoff_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "handoff_status": {
+          "type": "string",
+          "enum": [
+            "not_prepared",
+            "draft",
+            "prepared",
+            "ready",
+            "blocked",
+            "transmitted"
+          ]
+        },
+        "target_protocol": {
+          "type": "string",
+          "enum": [
+            "allocation_readiness_protocol",
+            "royalty_os",
+            "agentic_royalty_path",
+            "custom",
+            "other"
+          ]
+        },
+        "included_claim_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 1000
+        },
+        "included_candidate_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 500
+        },
+        "endpoint_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 500
+        },
+        "constraint_summary": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "required_downstream_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "handoff_payload_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "execution_boundary": {
+          "const": "handoff_only_no_allocation_calculation_or_payment_execution"
+        },
+        "transmitted_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "handoff_status": {
+                "enum": [
+                  "ready",
+                  "transmitted"
+                ]
+              }
+            },
+            "required": [
+              "handoff_status"
+            ]
+          },
+          "then": {
+            "required": [
+              "endpoint_refs"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "handoff_status": {
+                "const": "transmitted"
+              }
+            },
+            "required": [
+              "handoff_status"
+            ]
+          },
+          "then": {
+            "required": [
+              "handoff_payload_ref",
+              "transmitted_at"
+            ]
+          }
+        }
+      ]
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_status"
+      ],
+      "properties": {
+        "review_status": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "pending",
+            "approved",
+            "rejected",
+            "disputed"
+          ]
+        },
+        "reviewer_ref": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "review_notes": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "audit_refs": {
+          "$ref": "#/$defs/reference_list"
+        },
+        "dispute_refs": {
+          "$ref": "#/$defs/reference_list"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "review_status": {
+                "enum": [
+                  "approved",
+                  "rejected",
+                  "disputed"
+                ]
+              }
+            },
+            "required": [
+              "review_status"
+            ]
+          },
+          "then": {
+            "required": [
+              "reviewer_ref",
+              "reviewed_at"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
