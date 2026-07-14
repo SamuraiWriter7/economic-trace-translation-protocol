@@ -1,0 +1,463 @@
+schema_version: "0.3.0"
+record_type: cross_domain_causal_binding_record
+
+binding_id: causal-binding-2026-0001
+created_at: "2026-07-14T02:20:00Z"
+
+binding_profile:
+  profile_id: ettp-cross-domain-causal-binding
+  profile_version: "0.3.0"
+  binding_method: hybrid
+  confidence_scale: 0_to_1
+
+  binder:
+    binder_ref: causal-review-system-001
+    binder_type: hybrid
+    system_name: Example Cross-Domain Causal Review System
+    system_version: "1.0.0"
+
+  policy_refs:
+    - ref_id: causal-binding-policy-001
+      ref_type: policy
+      uri: https://example.org/policies/causal-binding-policy-001
+
+source_records:
+  - record_ref:
+      ref_id: translation-human-intent-001
+      ref_type: translation_record
+      uri: https://example.org/records/translation-human-intent-001
+    record_type: economic_event_translation_record
+    schema_version: "0.1.0"
+    record_status: accepted
+    included_subject_refs:
+      - human-intent-001
+
+  - record_ref:
+      ref_id: classification-human-intent-001
+      ref_type: classification_record
+      uri: https://example.org/records/classification-human-intent-001
+    record_type: structural_role_classification_record
+    schema_version: "0.2.0"
+    record_status: accepted
+    included_subject_refs:
+      - role-assignment-human-origin-001
+
+  - record_ref:
+      ref_id: translation-telecom-interaction-001
+      ref_type: translation_record
+      uri: https://example.org/records/translation-telecom-interaction-001
+    record_type: economic_event_translation_record
+    schema_version: "0.1.0"
+    record_status: accepted
+    included_subject_refs:
+      - telecom-interaction-001
+
+  - record_ref:
+      ref_id: classification-telecom-interaction-001
+      ref_type: classification_record
+      uri: https://example.org/records/classification-telecom-interaction-001
+    record_type: structural_role_classification_record
+    schema_version: "0.2.0"
+    record_status: accepted
+    included_subject_refs:
+      - role-assignment-telecom-distribution-001
+
+  - record_ref:
+      ref_id: translation-ai-recommendation-001
+      ref_type: translation_record
+      uri: https://example.org/records/translation-ai-recommendation-001
+    record_type: economic_event_translation_record
+    schema_version: "0.1.0"
+    record_status: accepted
+    included_subject_refs:
+      - ai-recommendation-001
+
+  - record_ref:
+      ref_id: classification-ai-recommendation-001
+      ref_type: classification_record
+      uri: https://example.org/records/classification-ai-recommendation-001
+    record_type: structural_role_classification_record
+    schema_version: "0.2.0"
+    record_status: accepted
+    included_subject_refs:
+      - role-assignment-ai-derivative-001
+
+  - record_ref:
+      ref_id: translation-financial-action-001
+      ref_type: translation_record
+      uri: https://example.org/records/translation-financial-action-001
+    record_type: economic_event_translation_record
+    schema_version: "0.1.0"
+    record_status: accepted
+    included_subject_refs:
+      - financial-action-001
+
+  - record_ref:
+      ref_id: classification-financial-action-001
+      ref_type: classification_record
+      uri: https://example.org/records/classification-financial-action-001
+    record_type: structural_role_classification_record
+    schema_version: "0.2.0"
+    record_status: accepted
+    included_subject_refs:
+      - role-assignment-finance-processing-001
+
+causal_nodes:
+  - node_id: node-human-intent
+    node_type: decision
+    domain: human
+    observation_status: observed
+    jurisdiction: JP
+
+    temporal_context:
+      time_status: exact
+      occurred_at: "2026-07-14T01:00:00Z"
+
+    source_record_refs:
+      - ref_id: translation-human-intent-001
+        ref_type: translation_record
+
+    subject_refs:
+      - human-intent-001
+
+    structural_role_assignment_refs:
+      - role-assignment-human-origin-001
+
+    summary: >-
+      A human declared an intent to compare available financial options.
+
+  - node_id: node-telecom-interaction
+    node_type: event
+    domain: telecom
+    observation_status: observed
+    jurisdiction: JP
+
+    temporal_context:
+      time_status: exact
+      occurred_at: "2026-07-14T01:01:00Z"
+
+    source_record_refs:
+      - ref_id: translation-telecom-interaction-001
+        ref_type: translation_record
+
+    subject_refs:
+      - telecom-interaction-001
+
+    structural_role_assignment_refs:
+      - role-assignment-telecom-distribution-001
+
+    summary: >-
+      A telecom service received and routed the user's comparison request.
+
+  - node_id: node-ai-recommendation
+    node_type: system_action
+    domain: ai
+    observation_status: observed
+    jurisdiction: JP
+
+    temporal_context:
+      time_status: exact
+      occurred_at: "2026-07-14T01:01:05Z"
+
+    source_record_refs:
+      - ref_id: translation-ai-recommendation-001
+        ref_type: translation_record
+
+    subject_refs:
+      - ai-recommendation-001
+
+    structural_role_assignment_refs:
+      - role-assignment-ai-derivative-001
+
+    summary: >-
+      An AI system transformed the request and available data
+      into a ranked recommendation.
+
+  - node_id: node-financial-action
+    node_type: decision
+    domain: finance
+    observation_status: observed
+    jurisdiction: JP
+
+    temporal_context:
+      time_status: exact
+      occurred_at: "2026-07-14T01:03:00Z"
+
+    source_record_refs:
+      - ref_id: translation-financial-action-001
+        ref_type: translation_record
+
+    subject_refs:
+      - financial-action-001
+
+    structural_role_assignment_refs:
+      - role-assignment-finance-processing-001
+
+    summary: >-
+      The user selected and initiated a financial product application.
+
+  - node_id: node-economic-outcome
+    node_type: outcome
+    domain: finance
+    observation_status: asserted
+    jurisdiction: JP
+
+    temporal_context:
+      time_status: exact
+      occurred_at: "2026-07-14T01:05:00Z"
+
+    source_record_refs:
+      - ref_id: outcome-record-001
+        ref_type: external_record
+        uri: https://example.org/outcomes/outcome-record-001
+
+    subject_refs:
+      - economic-outcome-001
+
+    summary: >-
+      The application was accepted and a service relationship was created.
+
+causal_edges:
+  - edge_id: edge-intent-to-telecom
+    source_node_ref: node-human-intent
+    target_node_ref: node-telecom-interaction
+    relation_type: initiates
+    claim_status: supported
+    causal_strength: material
+    confidence: 0.96
+    temporal_relation: source_before_target
+
+    basis:
+      basis_type: direct_observation
+      rationale: >-
+        The telecom request was created from the recorded human intent.
+
+      evidence_refs:
+        - ref_id: request-correlation-log-001
+          ref_type: evidence
+          uri: https://example.org/evidence/request-correlation-log-001
+
+    counterfactual_assessment:
+      assessment_status: supports_claim
+      method: request identifier comparison
+      result_note: >-
+        No telecom request exists without the originating intent record.
+
+    review_required: false
+
+  - edge_id: edge-telecom-to-ai
+    source_node_ref: node-telecom-interaction
+    target_node_ref: node-ai-recommendation
+    relation_type: enables
+    claim_status: supported
+    causal_strength: necessary
+    confidence: 0.94
+    temporal_relation: source_before_target
+
+    conditions:
+      - The request payload passes the platform access controls.
+
+    basis:
+      basis_type: mixed
+      rationale: >-
+        The AI process began after the telecom service routed
+        the normalized request.
+
+      evidence_refs:
+        - ref_id: routing-log-001
+          ref_type: evidence
+          uri: https://example.org/evidence/routing-log-001
+
+        - ref_id: ai-invocation-log-001
+          ref_type: evidence
+          uri: https://example.org/evidence/ai-invocation-log-001
+
+    counterfactual_assessment:
+      assessment_status: supports_claim
+      method: invocation dependency check
+      result_note: >-
+        The AI invocation requires the routed request identifier.
+
+    review_required: false
+
+  - edge_id: edge-ai-to-finance
+    source_node_ref: node-ai-recommendation
+    target_node_ref: node-financial-action
+    relation_type: informs
+    claim_status: proposed
+    causal_strength: partial
+    confidence: 0.78
+    temporal_relation: source_before_target
+
+    conditions:
+      - The user retained final decision authority.
+
+    basis:
+      basis_type: mixed
+      rationale: >-
+        The selected product appeared in the AI recommendation
+        before the user initiated the application.
+
+      evidence_refs:
+        - ref_id: recommendation-display-log-001
+          ref_type: evidence
+          uri: https://example.org/evidence/recommendation-display-log-001
+
+        - ref_id: application-selection-log-001
+          ref_type: evidence
+          uri: https://example.org/evidence/application-selection-log-001
+
+      alternative_explanation_refs:
+        - ref_id: prior-user-preference-001
+          ref_type: external_record
+          description: >-
+            The user may already have preferred the selected product.
+
+    counterfactual_assessment:
+      assessment_status: inconclusive
+      method: no-recommendation comparison unavailable
+      result_note: >-
+        The current evidence does not establish that the
+        recommendation was necessary.
+
+    review_required: true
+
+  - edge_id: edge-finance-to-outcome
+    source_node_ref: node-financial-action
+    target_node_ref: node-economic-outcome
+    relation_type: triggers
+    claim_status: supported
+    causal_strength: material
+    confidence: 0.92
+    temporal_relation: source_before_target
+
+    basis:
+      basis_type: direct_observation
+      rationale: >-
+        The accepted service relationship was created
+        from the recorded application.
+
+      evidence_refs:
+        - ref_id: application-result-log-001
+          ref_type: evidence
+          uri: https://example.org/evidence/application-result-log-001
+
+    review_required: false
+
+causal_paths:
+  - path_id: path-primary-001
+    path_type: primary
+
+    node_sequence:
+      - node-human-intent
+      - node-telecom-interaction
+      - node-ai-recommendation
+      - node-financial-action
+      - node-economic-outcome
+
+    edge_sequence:
+      - edge-intent-to-telecom
+      - edge-telecom-to-ai
+      - edge-ai-to-finance
+      - edge-finance-to-outcome
+
+    cross_domain: true
+    path_status: proposed
+    outcome_node_ref: node-economic-outcome
+    confidence: 0.82
+
+    summary: >-
+      Human intent moved through telecom and AI processing
+      into a financial action and outcome.
+
+continuity_assessments:
+  - assessment_id: continuity-purpose-001
+    path_ref: path-primary-001
+    continuity_type: purpose
+    from_node_ref: node-human-intent
+    to_node_ref: node-economic-outcome
+    continuity_status: conditional
+
+    evidence_refs:
+      - ref_id: purpose-mapping-record-001
+        ref_type: evidence
+        uri: https://example.org/evidence/purpose-mapping-record-001
+
+    required_action: >-
+      Confirm that no incompatible secondary marketing purpose
+      was introduced.
+
+    review_required: true
+
+  - assessment_id: continuity-governance-001
+    path_ref: path-primary-001
+    continuity_type: governance
+    from_node_ref: node-telecom-interaction
+    to_node_ref: node-financial-action
+    continuity_status: continuous
+
+    evidence_refs:
+      - ref_id: governance-handoff-log-001
+        ref_type: evidence
+        uri: https://example.org/evidence/governance-handoff-log-001
+
+    review_required: false
+
+  - assessment_id: continuity-privacy-001
+    path_ref: path-primary-001
+    continuity_type: privacy_transformation
+    from_node_ref: node-telecom-interaction
+    to_node_ref: node-ai-recommendation
+    continuity_status: continuous
+
+    evidence_refs:
+      - ref_id: privacy-control-verification-001
+        ref_type: evidence
+        uri: https://example.org/evidence/privacy-control-verification-001
+
+    review_required: false
+
+  - assessment_id: continuity-constraint-001
+    path_ref: path-primary-001
+    continuity_type: processing_constraint
+    from_node_ref: node-ai-recommendation
+    to_node_ref: node-financial-action
+    continuity_status: conditional
+
+    evidence_refs:
+      - ref_id: human-decision-gate-001
+        ref_type: evidence
+        uri: https://example.org/evidence/human-decision-gate-001
+
+    required_action: >-
+      Verify that the recommendation did not bypass
+      the human decision gate.
+
+    review_required: true
+
+unresolved_items:
+  - issue_id: unresolved-causality-001
+    issue_type: alternative_explanation
+    related_ref: edge-ai-to-finance
+
+    description: >-
+      The user may have selected the same product
+      without the AI recommendation.
+
+    resolution_status: under_review
+
+review:
+  review_status: pending
+  reviewer_ref: human-causal-reviewer-001
+
+  review_notes: >-
+    Review the AI-to-financial-action edge and purpose
+    continuity before acceptance.
+
+binding_status: review_required
+
+notes: >-
+  This record binds events across human, telecom, AI,
+  and finance domains. It does not establish economic
+  contribution, allocation eligibility, royalty entitlement,
+  or payment obligation.
