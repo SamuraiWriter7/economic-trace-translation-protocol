@@ -1,0 +1,224 @@
+schema_version: "0.2.0"
+record_type: structural_role_classification_record
+
+classification_id: src-2026-0001
+created_at: "2026-07-14T02:00:00Z"
+
+source_translation:
+  translation_id: ettp-2026-0001
+  schema_version: "0.1.0"
+  translation_status: review_required
+
+  record_ref:
+    ref_id: ettp-2026-0001
+    ref_type: translation_record
+    uri: https://example.org/records/ettp-2026-0001
+
+classification_profile:
+  profile_id: ettp-structural-role
+  profile_version: "0.2.0"
+  classification_method: hybrid
+  confidence_scale: 0_to_1
+
+  classifier:
+    classifier_ref: structural-review-system-001
+    classifier_type: hybrid
+    system_name: Example Structural Review System
+    system_version: "1.0.0"
+
+  policy_refs:
+    - ref_id: role-classification-policy-001
+      ref_type: policy
+      uri: https://example.org/policies/role-classification-policy-001
+
+classification_subjects:
+  - subject_ref: source-event-0001
+    subject_type: event
+    domain: ai
+    source_path: /source_event
+    description: Dataset registration event translated in v0.1.
+
+  - subject_ref: org-example-ai-lab
+    subject_type: actor
+    domain: ai
+    source_path: /source_event/actors/0
+
+  - subject_ref: dataset-provider-001
+    subject_type: actor
+    domain: external_partner
+    source_path: /source_event/actors/1
+
+  - subject_ref: dataset-example-001
+    subject_type: dataset
+    domain: external_partner
+    source_path: /data_context/dataset_refs/0
+
+  - subject_ref: example-model-development-platform
+    subject_type: system
+    domain: platform
+    source_path: /source_event/source_system
+
+  - subject_ref: privacy-review-board-001
+    subject_type: actor
+    domain: organization
+    source_path: /governance_context/determination_authority/authority_ref
+
+role_assignments:
+  - assignment_id: role-assignment-0001
+    subject_ref: dataset-provider-001
+    role: origin
+    role_status: proposed
+    primary: true
+    confidence: 0.82
+
+    scope:
+      scope_type: actor_participation
+      scope_ref: source-event-0001
+      conditions:
+        - Applies only to the introduction of the dataset into this event.
+
+    classification_source: hybrid
+
+    basis:
+      basis_type: mixed
+      rationale: >-
+        The provider introduced the dataset used as the initial input to
+        this translated event. This classification does not establish
+        ownership, legal entitlement, or economic contribution.
+
+      evidence_refs:
+        - ref_id: raw-event-log-0001
+          ref_type: event
+          uri: https://example.org/events/raw-event-log-0001
+
+      rule_refs:
+        - ref_id: origin-role-rule-001
+          ref_type: rule
+          uri: https://example.org/rules/origin-role-rule-001
+
+    review_required: true
+
+  - assignment_id: role-assignment-0002
+    subject_ref: org-example-ai-lab
+    role: derivative
+    role_status: proposed
+    primary: true
+    confidence: 0.91
+
+    scope:
+      scope_type: actor_participation
+      scope_ref: source-event-0001
+
+    classification_source: system_inference
+
+    basis:
+      basis_type: structural_inference
+      rationale: >-
+        The AI laboratory transformed an external dataset into a
+        model-evaluation input within the normalized processing event.
+
+      evidence_refs:
+        - ref_id: processing-log-001
+          ref_type: evidence
+          uri: https://example.org/processing/processing-log-001
+
+    review_required: true
+
+  - assignment_id: role-assignment-0003
+    subject_ref: dataset-example-001
+    role: supporting
+    role_status: proposed
+    primary: false
+    confidence: 0.95
+
+    scope:
+      scope_type: dataset_only
+      scope_ref: dataset-example-001
+
+    classification_source: event_fact
+
+    basis:
+      basis_type: direct_evidence
+      rationale: >-
+        The dataset was registered as a supporting input for model
+        evaluation. No causal effect or contribution amount is asserted.
+
+      evidence_refs:
+        - ref_id: dataset-example-001
+          ref_type: dataset
+          uri: https://example.org/datasets/dataset-example-001
+
+    review_required: false
+
+  - assignment_id: role-assignment-0004
+    subject_ref: example-model-development-platform
+    role: infrastructure
+    role_status: proposed
+    primary: false
+    confidence: 0.93
+
+    scope:
+      scope_type: system_function
+      scope_ref: source-event-0001
+
+    classification_source: event_fact
+
+    basis:
+      basis_type: direct_evidence
+      rationale: >-
+        The platform supplied the system environment in which the
+        translated event was registered and processed.
+
+    review_required: false
+
+  - assignment_id: role-assignment-0005
+    subject_ref: privacy-review-board-001
+    role: verification
+    role_status: proposed
+    primary: false
+    confidence: 0.88
+
+    scope:
+      scope_type: actor_participation
+      scope_ref: source-event-0001
+      conditions:
+        - Limited to governance and privacy review of the translated event.
+
+    classification_source: policy_mapping
+
+    basis:
+      basis_type: policy_rule
+      rationale: >-
+        The board is assigned to review the asserted governance basis and
+        required controls. This does not make it the audit authority for
+        downstream contribution or royalty decisions.
+
+      rule_refs:
+        - ref_id: governance-review-rule-001
+          ref_type: rule
+          uri: https://example.org/rules/governance-review-rule-001
+
+    review_required: true
+
+unresolved_items:
+  - issue_id: unresolved-0001
+    issue_type: ambiguous_role
+    subject_ref: dataset-provider-001
+    description: >-
+      The provider may later qualify as a supporting participant instead
+      of, or in addition to, origin after cross-domain causal binding.
+    resolution_status: open
+
+review:
+  review_status: pending
+  reviewer_ref: human-structural-reviewer-001
+  review_notes: >-
+    Human review is required for the proposed origin, derivative, and
+    verification assignments.
+
+classification_status: review_required
+
+notes: >-
+  This record classifies context-dependent structural roles only.
+  Causal binding is introduced in v0.3, contribution translation in v0.4,
+  and royalty readiness in v0.5.
