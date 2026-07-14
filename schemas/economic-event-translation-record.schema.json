@@ -1,0 +1,697 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/SamuraiWriter7/economic-trace-translation-protocol/main/schemas/economic-event-translation-record.schema.json",
+  "title": "Economic Event Translation Record",
+  "description": "A normalized record for translating heterogeneous real-world activity events into purpose-aware, governance-aware, privacy-aware economic trace inputs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "translation_id",
+    "created_at",
+    "source_event",
+    "normalized_event",
+    "purpose_context",
+    "governance_context",
+    "privacy_transformation",
+    "data_context",
+    "translation_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "record_type": {
+      "const": "economic_event_translation_record"
+    },
+    "translation_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_event": {
+      "$ref": "#/$defs/source_event"
+    },
+    "normalized_event": {
+      "$ref": "#/$defs/normalized_event"
+    },
+    "purpose_context": {
+      "$ref": "#/$defs/purpose_context"
+    },
+    "governance_context": {
+      "$ref": "#/$defs/governance_context"
+    },
+    "privacy_transformation": {
+      "$ref": "#/$defs/privacy_transformation"
+    },
+    "data_context": {
+      "$ref": "#/$defs/data_context"
+    },
+    "evidence_refs": {
+      "$ref": "#/$defs/reference_list"
+    },
+    "audit_refs": {
+      "$ref": "#/$defs/reference_list"
+    },
+    "translation_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "normalized",
+        "review_required",
+        "accepted",
+        "rejected"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 4000
+    }
+  },
+  "$defs": {
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref_id",
+        "ref_type"
+      ],
+      "properties": {
+        "ref_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "ref_type": {
+          "type": "string",
+          "enum": [
+            "event",
+            "policy",
+            "legal_source",
+            "evidence",
+            "audit",
+            "disclosure",
+            "processing_record",
+            "dataset",
+            "system",
+            "actor",
+            "other"
+          ]
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "reference_list": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reference"
+      },
+      "uniqueItems": true,
+      "maxItems": 100
+    },
+    "actor_reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor_ref",
+        "actor_type"
+      ],
+      "properties": {
+        "actor_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "actor_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "organization",
+            "ai_agent",
+            "platform",
+            "telecom_provider",
+            "financial_provider",
+            "external_partner",
+            "unknown",
+            "other"
+          ]
+        },
+        "role_in_event": {
+          "type": "string",
+          "enum": [
+            "initiator",
+            "operator",
+            "provider",
+            "recipient",
+            "subject",
+            "reviewer",
+            "controller",
+            "processor",
+            "observer",
+            "other"
+          ]
+        }
+      }
+    },
+    "source_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "event_type",
+        "occurred_at",
+        "domain",
+        "source_system",
+        "jurisdiction"
+      ],
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "event_type": {
+          "type": "string",
+          "enum": [
+            "telecom_event",
+            "payment_event",
+            "financial_event",
+            "agent_action",
+            "recommendation_event",
+            "tool_call",
+            "human_decision",
+            "platform_event",
+            "reward_event",
+            "ai_training_input",
+            "model_evaluation",
+            "data_transfer",
+            "other"
+          ]
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "domain": {
+          "type": "string",
+          "enum": [
+            "telecom",
+            "finance",
+            "ai",
+            "platform",
+            "human",
+            "organization",
+            "external_partner",
+            "cross_domain",
+            "other"
+          ]
+        },
+        "source_system": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "jurisdiction": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}(-[A-Z0-9]{1,3})?$"
+        },
+        "actors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/actor_reference"
+          },
+          "minItems": 1,
+          "maxItems": 50
+        },
+        "raw_event_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "payload_digest": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$"
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "economic_effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effect_type"
+      ],
+      "properties": {
+        "effect_type": {
+          "type": "string",
+          "enum": [
+            "none",
+            "service_usage",
+            "cost",
+            "revenue",
+            "payment",
+            "reward",
+            "allocation",
+            "risk_change",
+            "model_improvement",
+            "data_value",
+            "other",
+            "unknown"
+          ]
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "increase",
+            "decrease",
+            "neutral",
+            "mixed",
+            "unknown"
+          ]
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "unit": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "amount"
+            ]
+          },
+          "then": {
+            "required": [
+              "currency"
+            ]
+          }
+        }
+      ]
+    },
+    "normalized_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "normalization_profile",
+        "normalized_event_type",
+        "action",
+        "result_status",
+        "economic_effect"
+      ],
+      "properties": {
+        "normalization_profile": {
+          "const": "ettp-core-0.1"
+        },
+        "normalized_event_type": {
+          "type": "string",
+          "enum": [
+            "interaction",
+            "transaction",
+            "decision",
+            "processing",
+            "transfer",
+            "evaluation",
+            "distribution",
+            "reward",
+            "observation",
+            "other"
+          ]
+        },
+        "action": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "subject_ref": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "object_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "uniqueItems": true,
+          "maxItems": 100
+        },
+        "result_status": {
+          "type": "string",
+          "enum": [
+            "initiated",
+            "completed",
+            "failed",
+            "denied",
+            "reversed",
+            "unknown"
+          ]
+        },
+        "economic_effect": {
+          "$ref": "#/$defs/economic_effect"
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "purpose_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declared_purpose",
+        "purpose_category",
+        "purpose_status"
+      ],
+      "properties": {
+        "declared_purpose": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "purpose_category": {
+          "type": "string",
+          "enum": [
+            "service_delivery",
+            "statistical_creation",
+            "ai_training",
+            "model_evaluation",
+            "research",
+            "recommendation",
+            "payment_processing",
+            "fraud_prevention",
+            "compliance",
+            "audit",
+            "allocation",
+            "other"
+          ]
+        },
+        "purpose_status": {
+          "type": "string",
+          "enum": [
+            "declared",
+            "verified",
+            "disputed",
+            "unknown"
+          ]
+        },
+        "purpose_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "secondary_purposes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "uniqueItems": true,
+          "maxItems": 20
+        },
+        "purpose_change_detected": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "asserted_legal_basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis_code",
+        "basis_status"
+      ],
+      "properties": {
+        "basis_code": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "basis_status": {
+          "type": "string",
+          "enum": [
+            "asserted",
+            "under_review",
+            "confirmed",
+            "rejected",
+            "unknown"
+          ]
+        },
+        "legal_source_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "exception_basis_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "scope_note": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "determination_authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authority_type",
+        "authority_ref"
+      ],
+      "properties": {
+        "authority_type": {
+          "type": "string",
+          "enum": [
+            "human_reviewer",
+            "organization_policy",
+            "regulator",
+            "court",
+            "automated_assessment",
+            "external_auditor",
+            "other"
+          ]
+        },
+        "authority_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        }
+      }
+    },
+    "governance_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consent_status",
+        "asserted_legal_basis",
+        "determination_authority",
+        "determination_status",
+        "review_status"
+      ],
+      "properties": {
+        "consent_status": {
+          "type": "string",
+          "enum": [
+            "obtained",
+            "not_obtained",
+            "not_required",
+            "withdrawn",
+            "unknown"
+          ]
+        },
+        "asserted_legal_basis": {
+          "$ref": "#/$defs/asserted_legal_basis"
+        },
+        "determination_authority": {
+          "$ref": "#/$defs/determination_authority"
+        },
+        "determination_status": {
+          "type": "string",
+          "enum": [
+            "unassessed",
+            "provisional",
+            "confirmed",
+            "rejected"
+          ]
+        },
+        "review_status": {
+          "type": "string",
+          "enum": [
+            "not_required",
+            "pending",
+            "approved",
+            "rejected"
+          ]
+        },
+        "processing_eligibility": {
+          "type": "string",
+          "enum": [
+            "not_assessed",
+            "eligible",
+            "conditionally_eligible",
+            "ineligible"
+          ]
+        },
+        "required_controls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "uniqueItems": true,
+          "maxItems": 50
+        }
+      }
+    },
+    "privacy_transformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "methods",
+        "reidentification_control",
+        "personal_targeting_constraint"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "not_applied",
+            "planned",
+            "applied",
+            "verified",
+            "unknown"
+          ]
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "identifier_removal",
+              "pseudonymization",
+              "aggregation",
+              "generalization",
+              "masking",
+              "tokenization",
+              "differential_privacy",
+              "encryption",
+              "access_control",
+              "other"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 20
+        },
+        "reidentification_control": {
+          "type": "string",
+          "enum": [
+            "not_assessed",
+            "prohibited",
+            "controlled",
+            "verified"
+          ]
+        },
+        "personal_targeting_constraint": {
+          "type": "string",
+          "enum": [
+            "not_assessed",
+            "permitted",
+            "restricted",
+            "prohibited"
+          ]
+        },
+        "transformation_ref": {
+          "$ref": "#/$defs/reference"
+        },
+        "verification_ref": {
+          "$ref": "#/$defs/reference"
+        }
+      }
+    },
+    "data_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data_category",
+        "sensitivity_class",
+        "sensitive_data_flag"
+      ],
+      "properties": {
+        "data_category": {
+          "type": "string",
+          "enum": [
+            "personal_data",
+            "personal_related_data",
+            "anonymous_data",
+            "pseudonymous_data",
+            "aggregate_data",
+            "financial_data",
+            "telecom_data",
+            "behavioral_data",
+            "model_data",
+            "mixed",
+            "other"
+          ]
+        },
+        "sensitivity_class": {
+          "type": "string",
+          "enum": [
+            "public",
+            "internal",
+            "confidential",
+            "restricted",
+            "highly_restricted",
+            "unknown"
+          ]
+        },
+        "sensitive_data_flag": {
+          "type": "boolean"
+        },
+        "minor_data_flag": {
+          "type": "boolean"
+        },
+        "biometric_data_flag": {
+          "type": "boolean"
+        },
+        "data_subject_scope": {
+          "type": "string",
+          "enum": [
+            "individual",
+            "household",
+            "organization",
+            "community",
+            "population",
+            "not_applicable",
+            "unknown"
+          ]
+        },
+        "dataset_refs": {
+          "$ref": "#/$defs/reference_list"
+        }
+      }
+    }
+  }
+}
