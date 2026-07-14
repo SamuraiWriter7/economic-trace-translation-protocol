@@ -1,0 +1,583 @@
+schema_version: "0.5.0"
+record_type: royalty_readiness_bridge_record
+
+bridge_id: royalty-readiness-2026-0001
+created_at: "2026-07-14T03:00:00Z"
+
+source_contribution_profile:
+  profile_id: contribution-profile-2026-0001
+  schema_version: "0.4.0"
+  profile_status: review_required
+
+  record_ref:
+    ref_id: contribution-profile-2026-0001
+    ref_type: contribution_profile
+    uri: https://example.org/records/contribution-profile-2026-0001
+
+  claims:
+    - claim_ref: contribution-claim-human-001
+      subject_ref: human-user-001
+      claim_status: supported
+      contribution_type: human_intent
+      direction: positive
+
+    - claim_ref: contribution-claim-telecom-001
+      subject_ref: telecom-service-001
+      claim_status: supported
+      contribution_type: distribution
+      direction: positive
+
+    - claim_ref: contribution-claim-ai-001
+      subject_ref: ai-recommendation-system-001
+      claim_status: proposed
+      contribution_type: transformation
+      direction: positive
+
+    - claim_ref: contribution-claim-finance-001
+      subject_ref: financial-provider-001
+      claim_status: supported
+      contribution_type: outcome_enablement
+      direction: positive
+
+  outcome_refs:
+    - node-economic-outcome
+
+  unresolved_issue_refs:
+    - unresolved-contribution-001
+
+readiness_profile:
+  profile_name: ettp-royalty-readiness
+  profile_version: "0.5.0"
+  assessment_method: hybrid
+  target_protocol: allocation_readiness_protocol
+  confidence_scale: 0_to_1
+
+  assessor:
+    assessor_ref: royalty-readiness-review-system-001
+    assessor_type: hybrid
+    system_name: Example Royalty Readiness Review System
+    system_version: "1.0.0"
+
+  policy_refs:
+    - ref_id: royalty-readiness-policy-001
+      ref_type: policy
+      uri: https://example.org/policies/royalty-readiness-policy-001
+
+  assessment_scope_note: >-
+    This assessment determines handoff readiness only.
+    It does not calculate allocation shares, royalty amounts,
+    tax treatment, or settlement instructions.
+
+royalty_candidates:
+  - candidate_id: candidate-human-001
+    subject_ref: human-user-001
+    candidate_type: individual
+
+    claim_refs:
+      - contribution-claim-human-001
+
+    candidate_status: eligible
+
+    endpoint:
+      endpoint_ref: endpoint-human-platform-001
+      endpoint_type: platform_account
+      resolution_status: verified
+
+      verification_refs:
+        - ref_id: endpoint-verification-human-001
+          ref_type: evidence
+          uri: https://example.org/evidence/endpoint-verification-human-001
+
+    constraints:
+      - Downstream identity and tax checks remain required.
+
+    review_required: false
+
+  - candidate_id: candidate-telecom-001
+    subject_ref: telecom-service-001
+    candidate_type: organization
+
+    claim_refs:
+      - contribution-claim-telecom-001
+
+    candidate_status: eligible
+
+    endpoint:
+      endpoint_ref: endpoint-telecom-contract-001
+      endpoint_type: contract_account
+      resolution_status: verified
+
+      verification_refs:
+        - ref_id: endpoint-verification-telecom-001
+          ref_type: evidence
+          uri: https://example.org/evidence/endpoint-verification-telecom-001
+
+    review_required: false
+
+  - candidate_id: candidate-ai-operator-001
+    subject_ref: ai-recommendation-system-001
+    candidate_type: system_operator
+
+    claim_refs:
+      - contribution-claim-ai-001
+
+    candidate_status: blocked
+
+    endpoint:
+      endpoint_ref: endpoint-ai-operator-001
+      endpoint_type: contract_account
+      resolution_status: provisional
+
+    constraints:
+      - Resolve overlap with the human decision claim.
+      - Confirm the legally recognized downstream beneficiary.
+
+    review_required: true
+
+  - candidate_id: candidate-finance-001
+    subject_ref: financial-provider-001
+    candidate_type: organization
+
+    claim_refs:
+      - contribution-claim-finance-001
+
+    candidate_status: eligible
+
+    endpoint:
+      endpoint_ref: endpoint-finance-contract-001
+      endpoint_type: contract_account
+      resolution_status: verified
+
+      verification_refs:
+        - ref_id: endpoint-verification-finance-001
+          ref_type: evidence
+          uri: https://example.org/evidence/endpoint-verification-finance-001
+
+    review_required: false
+
+readiness_gates:
+  - gate_id: gate-trace-integrity-001
+    gate_type: source_trace_integrity
+    scope_type: bridge
+
+    related_refs:
+      - contribution-profile-2026-0001
+
+    gate_status: passed
+    blocking: true
+    confidence: 0.96
+
+    rationale: >-
+      Required translation, classification, causal, and contribution
+      references are available for the assessed claims.
+
+    evidence_refs:
+      - ref_id: trace-integrity-audit-001
+        ref_type: audit
+        uri: https://example.org/audits/trace-integrity-audit-001
+
+    review_required: false
+
+  - gate_id: gate-governance-001
+    gate_type: governance_eligibility
+    scope_type: bridge
+    gate_status: passed
+    blocking: true
+    confidence: 0.91
+
+    rationale: >-
+      No unresolved governance prohibition was identified for the
+      current handoff candidates.
+
+    evidence_refs:
+      - ref_id: governance-review-001
+        ref_type: audit
+        uri: https://example.org/audits/governance-review-001
+
+    review_required: false
+
+  - gate_id: gate-causal-validity-001
+    gate_type: causal_binding_validity
+    scope_type: bridge
+    gate_status: passed
+    blocking: true
+    confidence: 0.89
+
+    rationale: >-
+      The causal paths supporting the human, telecom, and financial
+      claims are sufficiently documented for downstream assessment.
+
+    evidence_refs:
+      - ref_id: causal-binding-review-001
+        ref_type: audit
+        uri: https://example.org/audits/causal-binding-review-001
+
+    review_required: false
+
+  - gate_id: gate-human-claim-001
+    gate_type: contribution_claim_acceptance
+    scope_type: claim
+
+    related_refs:
+      - contribution-claim-human-001
+
+    gate_status: passed
+    blocking: true
+    confidence: 0.88
+
+    rationale: >-
+      The human intent claim is supported and sufficiently documented
+      for allocation-readiness review.
+
+    review_required: false
+
+  - gate_id: gate-telecom-claim-001
+    gate_type: contribution_claim_acceptance
+    scope_type: claim
+
+    related_refs:
+      - contribution-claim-telecom-001
+
+    gate_status: passed
+    blocking: true
+    confidence: 0.94
+
+    rationale: >-
+      The telecom distribution claim is supported by direct routing
+      records.
+
+    review_required: false
+
+  - gate_id: gate-ai-overlap-001
+    gate_type: overlap_resolution
+    scope_type: claim
+
+    related_refs:
+      - contribution-claim-ai-001
+      - contribution-claim-human-001
+
+    gate_status: failed
+    blocking: true
+    confidence: 0.93
+
+    rationale: >-
+      The relative influence of the AI recommendation and prior human
+      preference has not been separated.
+
+    conditions:
+      - Provide a valid comparison method or an accepted shared-effect rule.
+
+    review_required: true
+
+  - gate_id: gate-finance-claim-001
+    gate_type: contribution_claim_acceptance
+    scope_type: claim
+
+    related_refs:
+      - contribution-claim-finance-001
+
+    gate_status: passed
+    blocking: true
+    confidence: 0.92
+
+    rationale: >-
+      The financial outcome-enablement claim is supported by direct
+      application-to-outcome records.
+
+    review_required: false
+
+  - gate_id: gate-human-endpoint-001
+    gate_type: royalty_endpoint_resolution
+    scope_type: endpoint
+
+    related_refs:
+      - endpoint-human-platform-001
+
+    gate_status: passed
+    blocking: true
+    confidence: 0.98
+    rationale: The downstream platform account has been verified.
+    review_required: false
+
+  - gate_id: gate-telecom-endpoint-001
+    gate_type: royalty_endpoint_resolution
+    scope_type: endpoint
+
+    related_refs:
+      - endpoint-telecom-contract-001
+
+    gate_status: passed
+    blocking: true
+    confidence: 0.98
+    rationale: The organizational contract account has been verified.
+    review_required: false
+
+  - gate_id: gate-ai-endpoint-001
+    gate_type: royalty_endpoint_resolution
+    scope_type: endpoint
+
+    related_refs:
+      - endpoint-ai-operator-001
+
+    gate_status: conditional
+    blocking: true
+    confidence: 0.72
+
+    rationale: >-
+      An operator account is known, but the correct beneficiary mapping
+      remains provisional.
+
+    conditions:
+      - Confirm the recognized beneficiary before handoff.
+
+    review_required: true
+
+  - gate_id: gate-finance-endpoint-001
+    gate_type: royalty_endpoint_resolution
+    scope_type: endpoint
+
+    related_refs:
+      - endpoint-finance-contract-001
+
+    gate_status: passed
+    blocking: true
+    confidence: 0.98
+    rationale: The organizational contract account has been verified.
+    review_required: false
+
+  - gate_id: gate-audit-completion-001
+    gate_type: audit_completion
+    scope_type: bridge
+    gate_status: passed
+    blocking: true
+    confidence: 0.9
+
+    rationale: >-
+      The bridge-level trace and governance review has been completed.
+
+    evidence_refs:
+      - ref_id: bridge-audit-001
+        ref_type: audit
+        uri: https://example.org/audits/bridge-audit-001
+
+    review_required: false
+
+  - gate_id: gate-human-approval-001
+    gate_type: human_approval
+    scope_type: bridge
+    gate_status: passed
+    blocking: true
+    confidence: 1.0
+
+    rationale: >-
+      A human reviewer approved a partial handoff excluding the blocked
+      AI claim.
+
+    evidence_refs:
+      - ref_id: human-approval-record-001
+        ref_type: evidence
+        uri: https://example.org/evidence/human-approval-record-001
+
+    review_required: false
+
+  - gate_id: gate-allocation-policy-001
+    gate_type: allocation_policy_availability
+    scope_type: bridge
+    gate_status: passed
+    blocking: true
+    confidence: 0.95
+
+    rationale: >-
+      A downstream allocation policy exists, but no share is calculated
+      in this record.
+
+    evidence_refs:
+      - ref_id: downstream-allocation-policy-001
+        ref_type: policy
+        uri: https://example.org/policies/downstream-allocation-policy-001
+
+    review_required: false
+
+claim_readiness_assessments:
+  - assessment_id: readiness-human-001
+    claim_ref: contribution-claim-human-001
+    subject_ref: human-user-001
+    candidate_ref: candidate-human-001
+    readiness_status: ready
+    allocation_basis_status: sufficient
+
+    gate_refs:
+      - gate-trace-integrity-001
+      - gate-governance-001
+      - gate-causal-validity-001
+      - gate-human-claim-001
+      - gate-human-endpoint-001
+      - gate-audit-completion-001
+      - gate-human-approval-001
+      - gate-allocation-policy-001
+
+    conditions:
+      - Complete downstream identity, tax, and settlement checks.
+
+    confidence: 0.88
+    review_required: false
+
+  - assessment_id: readiness-telecom-001
+    claim_ref: contribution-claim-telecom-001
+    subject_ref: telecom-service-001
+    candidate_ref: candidate-telecom-001
+    readiness_status: ready
+    allocation_basis_status: sufficient
+
+    gate_refs:
+      - gate-trace-integrity-001
+      - gate-governance-001
+      - gate-causal-validity-001
+      - gate-telecom-claim-001
+      - gate-telecom-endpoint-001
+      - gate-audit-completion-001
+      - gate-human-approval-001
+      - gate-allocation-policy-001
+
+    confidence: 0.94
+    review_required: false
+
+  - assessment_id: readiness-ai-001
+    claim_ref: contribution-claim-ai-001
+    subject_ref: ai-recommendation-system-001
+    candidate_ref: candidate-ai-operator-001
+    readiness_status: blocked
+    allocation_basis_status: insufficient
+
+    gate_refs:
+      - gate-trace-integrity-001
+      - gate-governance-001
+      - gate-ai-overlap-001
+      - gate-ai-endpoint-001
+
+    blocking_reason_refs:
+      - unresolved-readiness-ai-001
+
+    conditions:
+      - Resolve overlapping influence with the human claim.
+      - Verify the downstream beneficiary mapping.
+
+    confidence: 0.61
+    review_required: true
+
+  - assessment_id: readiness-finance-001
+    claim_ref: contribution-claim-finance-001
+    subject_ref: financial-provider-001
+    candidate_ref: candidate-finance-001
+    readiness_status: ready
+    allocation_basis_status: sufficient
+
+    gate_refs:
+      - gate-trace-integrity-001
+      - gate-governance-001
+      - gate-causal-validity-001
+      - gate-finance-claim-001
+      - gate-finance-endpoint-001
+      - gate-audit-completion-001
+      - gate-human-approval-001
+      - gate-allocation-policy-001
+
+    confidence: 0.92
+    review_required: false
+
+unresolved_items:
+  - issue_id: unresolved-readiness-ai-001
+    issue_type: overlap_unresolved
+    related_ref: contribution-claim-ai-001
+
+    description: >-
+      The AI recommendation claim overlaps with the human decision claim,
+      and the recognized beneficiary endpoint remains provisional.
+
+    blocking: true
+    resolution_status: under_review
+
+readiness_summary:
+  overall_status: conditionally_ready
+  readiness_boundary: no_allocation_share_royalty_amount_or_payment_execution
+
+  ready_claim_count: 3
+  conditional_claim_count: 0
+  blocked_claim_count: 1
+  excluded_claim_count: 0
+
+  blocking_gate_refs:
+    - gate-ai-overlap-001
+    - gate-ai-endpoint-001
+
+  blocking_issue_refs:
+    - unresolved-readiness-ai-001
+
+  ready_candidate_refs:
+    - candidate-human-001
+    - candidate-telecom-001
+    - candidate-finance-001
+
+  required_downstream_actions:
+    - Calculate allocation shares under the downstream policy.
+    - Perform identity, tax, sanctions, and settlement checks.
+    - Exclude the blocked AI claim unless its blocking issues are resolved.
+
+  summary_note: >-
+    Three claims are ready for downstream allocation assessment.
+    The AI transformation claim remains blocked and is excluded
+    from the current handoff package.
+
+royalty_handoff:
+  handoff_id: royalty-handoff-2026-0001
+  handoff_status: prepared
+  target_protocol: allocation_readiness_protocol
+
+  included_claim_refs:
+    - contribution-claim-human-001
+    - contribution-claim-telecom-001
+    - contribution-claim-finance-001
+
+  included_candidate_refs:
+    - candidate-human-001
+    - candidate-telecom-001
+    - candidate-finance-001
+
+  endpoint_refs:
+    - endpoint-human-platform-001
+    - endpoint-telecom-contract-001
+    - endpoint-finance-contract-001
+
+  constraint_summary:
+    - No allocation percentage is defined by this record.
+    - No royalty amount is defined by this record.
+    - The AI claim is excluded from the current handoff.
+    - Downstream compliance and settlement checks remain mandatory.
+
+  required_downstream_actions:
+    - Apply the selected allocation policy.
+    - Produce an auditable allocation decision record.
+    - Obtain final settlement authorization before payment.
+
+  execution_boundary: handoff_only_no_allocation_calculation_or_payment_execution
+
+review:
+  review_status: approved
+  reviewer_ref: human-royalty-readiness-reviewer-001
+  reviewed_at: "2026-07-14T03:05:00Z"
+
+  review_notes: >-
+    The reviewer approved a partial handoff for the human, telecom,
+    and financial claims. The AI claim remains blocked.
+
+  audit_refs:
+    - ref_id: royalty-readiness-audit-001
+      ref_type: audit
+      uri: https://example.org/audits/royalty-readiness-audit-001
+
+bridge_status: conditionally_ready
+
+notes: >-
+  This bridge records readiness for downstream allocation and royalty
+  processing. It does not determine ownership, allocation percentages,
+  royalty amounts, tax treatment, settlement instructions, or payment.
